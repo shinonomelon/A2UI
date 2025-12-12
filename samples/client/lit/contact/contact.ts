@@ -135,7 +135,7 @@ export class A2UIContactFinder extends SignalWatcher(LitElement) {
       }
 
       .rotate {
-        animation: rotate 1s linear infinite;
+        animation: spin 1s linear infinite;
       }
 
       .pending {
