@@ -36,6 +36,7 @@ Here are the instructions if you want to do each step manually.
   * `npm start -- contact`
   * `npm start -- rizzcharts`
   * `npm start -- gallery` (Client-only, no server required)
+  * `npm start -- material3-catalog` (Client-only, no server required)
 5. Open http://localhost:4200/
 
 Important: The sample code provided is for demonstration purposes and illustrates the mechanics of A2UI and the Agent-to-Agent (A2A) protocol. When building production applications, it is critical to treat any agent operating outside of your direct control as a potentially untrusted entity.

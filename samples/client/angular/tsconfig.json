@@ -59,6 +59,9 @@
     },
     {
       "path": "./projects/gallery/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/material3-catalog/tsconfig.app.json"
     }
   ]
 }
