@@ -41,16 +41,9 @@ import * as UI from "@a2ui/lit/ui";
 // App elements.
 import "./ui/ui.js";
 
-// Configurations
-import { AppConfig } from "./configs/types.js";
-import { config as restaurantConfig } from "./configs/restaurant.js";
-import { config as contactsConfig } from "./configs/contacts.js";
+// Configuration
+import { config as quizConfig } from "./configs/quiz.js";
 import { styleMap } from "lit/directives/style-map.js";
-
-const configs: Record<string, AppConfig> = {
-  restaurant: restaurantConfig,
-  contacts: contactsConfig,
-};
 
 @customElement("a2ui-shell")
 export class A2UILayoutEditor extends SignalWatcher(LitElement) {
@@ -67,7 +60,7 @@ export class A2UILayoutEditor extends SignalWatcher(LitElement) {
   accessor #lastMessages: v0_8.Types.ServerToClientMessage[] = [];
 
   @state()
-  accessor config: AppConfig = configs.restaurant;
+  accessor config = quizConfig;
 
   @state()
   accessor #loadingTextIndex = 0;
@@ -283,11 +276,6 @@ export class A2UILayoutEditor extends SignalWatcher(LitElement) {
   connectedCallback() {
     super.connectedCallback();
 
-    // Load config from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const appKey = urlParams.get("app") || "restaurant";
-    this.config = configs[appKey] || configs.restaurant;
-
     // Apply the theme directly, which will use the Lit context.
     if (this.config.theme) {
       this.theme = this.config.theme;
@@ -316,16 +304,16 @@ export class A2UILayoutEditor extends SignalWatcher(LitElement) {
     return html` <div>
       <button
         @click=${(evt: Event) => {
-        if (!(evt.target instanceof HTMLButtonElement)) return;
-        const { colorScheme } = window.getComputedStyle(evt.target);
-        if (colorScheme === "dark") {
-          document.body.classList.add("light");
-          document.body.classList.remove("dark");
-        } else {
-          document.body.classList.add("dark");
-          document.body.classList.remove("light");
-        }
-      }}
+          if (!(evt.target instanceof HTMLButtonElement)) return;
+          const { colorScheme } = window.getComputedStyle(evt.target);
+          if (colorScheme === "dark") {
+            document.body.classList.add("light");
+            document.body.classList.remove("dark");
+          } else {
+            document.body.classList.add("dark");
+            document.body.classList.remove("light");
+          }
+        }}
         class="theme-toggle"
       >
         <span class="g-icon filled-heavy"></span>
@@ -355,10 +343,11 @@ export class A2UILayoutEditor extends SignalWatcher(LitElement) {
       ${this.config.heroImage
         ? html`<div
             style=${styleMap({
-          "--background-image-light": `url(${this.config.heroImage})`,
-          "--background-image-dark": `url(${this.config.heroImageDark ?? this.config.heroImage
-            })`,
-        })}
+              "--background-image-light": `url(${this.config.heroImage})`,
+              "--background-image-dark": `url(${
+                this.config.heroImageDark ?? this.config.heroImage
+              })`,
+            })}
             id="hero-img"
           ></div>`
         : nothing}
@@ -447,62 +436,84 @@ export class A2UILayoutEditor extends SignalWatcher(LitElement) {
 
     return html`<section id="surfaces">
       ${repeat(
-      this.#processor.getSurfaces(),
-      ([surfaceId]) => surfaceId,
-      ([surfaceId, surface]) => {
-        return html`<a2ui-surface
+        this.#processor.getSurfaces(),
+        ([surfaceId]) => surfaceId,
+        ([surfaceId, surface]) => {
+          return html`<a2ui-surface
               @a2uiaction=${async (
-          evt: v0_8.Events.StateEvent<"a2ui.action">
-        ) => {
-            const [target] = evt.composedPath();
-            if (!(target instanceof HTMLElement)) {
-              return;
-            }
-
-            const context: v0_8.Types.A2UIClientEventMessage["userAction"]["context"] =
-              {};
-            if (evt.detail.action.context) {
-              const srcContext = evt.detail.action.context;
-              for (const item of srcContext) {
-                if (item.value.literalBoolean) {
-                  context[item.key] = item.value.literalBoolean;
-                } else if (item.value.literalNumber) {
-                  context[item.key] = item.value.literalNumber;
-                } else if (item.value.literalString) {
-                  context[item.key] = item.value.literalString;
-                } else if (item.value.path) {
-                  const path = this.#processor.resolvePath(
-                    item.value.path,
-                    evt.detail.dataContextPath
-                  );
-                  const value = this.#processor.getData(
-                    evt.detail.sourceComponent,
-                    path,
-                    surfaceId
-                  );
-                  context[item.key] = value;
+                evt: v0_8.Events.StateEvent<"a2ui.action">
+              ) => {
+                const [target] = evt.composedPath();
+                if (!(target instanceof HTMLElement)) {
+                  return;
                 }
-              }
-            }
 
-            const message: v0_8.Types.A2UIClientEventMessage = {
-              userAction: {
-                name: evt.detail.action.name,
-                surfaceId,
-                sourceComponentId: target.id,
-                timestamp: new Date().toISOString(),
-                context,
-              },
-            };
+                const context: v0_8.Types.A2UIClientEventMessage["userAction"]["context"] =
+                  {};
+                if (evt.detail.action.context) {
+                  const srcContext = evt.detail.action.context;
+                  for (const item of srcContext) {
+                    if (item.value.literalBoolean) {
+                      context[item.key] = item.value.literalBoolean;
+                    } else if (item.value.literalNumber) {
+                      context[item.key] = item.value.literalNumber;
+                    } else if (item.value.literalString) {
+                      context[item.key] = item.value.literalString;
+                    } else if (item.value.path) {
+                      const path = this.#processor.resolvePath(
+                        item.value.path,
+                        evt.detail.dataContextPath
+                      );
+                      const value = this.#processor.getData(
+                        evt.detail.sourceComponent,
+                        path,
+                        surfaceId
+                      );
+                      // Convert Signal-based data structures to plain JS values
+                      // SignalArray has a 'vals' property, SignalMap has 'collection'
+                      if (
+                        value &&
+                        typeof value === "object" &&
+                        "vals" in value
+                      ) {
+                        // SignalArray - extract the underlying array
+                        context[item.key] = Array.from(
+                          value as unknown as Iterable<unknown>
+                        );
+                      } else if (
+                        value &&
+                        typeof value === "object" &&
+                        "collection" in value
+                      ) {
+                        // SignalMap - convert to plain object
+                        context[item.key] = Object.fromEntries(
+                          value as unknown as Map<string, unknown>
+                        );
+                      } else {
+                        context[item.key] = value;
+                      }
+                    }
+                  }
+                }
 
-            await this.#sendAndProcessMessage(message);
-          }}
+                const message: v0_8.Types.A2UIClientEventMessage = {
+                  userAction: {
+                    name: evt.detail.action.name,
+                    surfaceId,
+                    sourceComponentId: target.id,
+                    timestamp: new Date().toISOString(),
+                    context,
+                  },
+                };
+
+                await this.#sendAndProcessMessage(message);
+              }}
               .surfaceId=${surfaceId}
               .surface=${surface}
               .processor=${this.#processor}
             ></a2-uisurface>`;
-      }
-    )}
+        }
+      )}
     </section>`;
   }
 

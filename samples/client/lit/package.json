@@ -2,20 +2,15 @@
   "name": "@a2ui/lit-samples",
   "private": true,
   "version": "0.8.1",
-  "description": "A2UI Lit Samples",
+  "description": "A2UI Quiz App",
   "workspaces": [
-    "contact",
-    "restaurant",
     "shell"
   ],
   "scripts": {
-    "serve:agent:restaurant": "cd ../../agent/adk/restaurant_finder && uv run .",
-    "serve:agent:contact_lookup": "cd ../../agent/adk/contact_lookup && uv run .",
-    "serve:agent:contact_multi_surface": "cd ../../agent/adk/contact_multiple_surfaces && uv run .",
+    "serve:agent": "cd ../../agent/adk/quiz_tutor && uv run .",
     "serve:shell": "cd shell && npm run dev",
     "build:renderer": "cd ../../../renderers/lit && npm install && npm run build",
-    "demo:all": "npm install && npm run build:renderer && concurrently -k -n \"SHELL,REST,CONT1\" -c \"magenta,blue,green\" \"npm run serve:shell\" \"npm run serve:agent:restaurant\" \"npm run serve:agent:contact_lookup\"",
-    "demo:restaurant": "npm install && npm run build:renderer && concurrently -k -n \"SHELL,REST\" -c \"magenta,blue\" \"npm run serve:shell\" \"npm run serve:agent:restaurant\""
+    "start": "npm install && npm run build:renderer && concurrently -k -n \"SHELL,AGENT\" -c \"magenta,yellow\" \"npm run serve:shell\" \"npm run serve:agent\""
   },
   "devDependencies": {
     "concurrently": "9.2.1"

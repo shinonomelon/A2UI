@@ -23,9 +23,14 @@ const A2AUI_MIME_TYPE = "application/json+a2aui";
 export class A2UIClient {
   #serverUrl: string;
   #client: A2AClient | null = null;
+  #contextId: string | undefined = undefined;
 
   constructor(serverUrl: string = "") {
     this.#serverUrl = serverUrl;
+  }
+
+  resetContext() {
+    this.#contextId = undefined;
   }
 
   #ready: Promise<void> = Promise.resolve();
@@ -86,6 +91,7 @@ export class A2UIClient {
     const response = await client.sendMessage({
       message: {
         messageId: crypto.randomUUID(),
+        contextId: this.#contextId,
         role: "user",
         parts: parts,
         kind: "message",
@@ -97,6 +103,11 @@ export class A2UIClient {
     }
 
     const result = (response as SendMessageSuccessResponse).result as Task;
+
+    // Store the contextId for subsequent requests to maintain session
+    if (result.contextId) {
+      this.#contextId = result.contextId;
+    }
     if (result.kind === "task" && result.status.message?.parts) {
       const messages: v0_8.Types.ServerToClientMessage[] = [];
       for (const part of result.status.message.parts) {

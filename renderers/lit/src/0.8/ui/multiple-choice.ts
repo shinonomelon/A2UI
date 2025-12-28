@@ -103,13 +103,37 @@ export class MultipleChoice extends Root {
     this.#setBoundValue(selectionValue as string[]);
   }
 
+  #getCurrentSelections(): string[] {
+    if (Array.isArray(this.selections)) {
+      return this.selections;
+    }
+    if (
+      this.processor &&
+      this.component &&
+      this.selections &&
+      "path" in this.selections &&
+      this.selections.path
+    ) {
+      const value = this.processor.getData(
+        this.component,
+        this.selections.path,
+        this.surfaceId ?? A2uiMessageProcessor.DEFAULT_SURFACE_ID
+      );
+      if (Array.isArray(value)) {
+        return value as string[];
+      }
+    }
+    return [];
+  }
+
   render() {
+    const currentSelections = this.#getCurrentSelections();
     return html`<section class=${classMap(
       this.theme.components.MultipleChoice.container
     )}>
       <label class=${classMap(
         this.theme.components.MultipleChoice.label
-      )} for="data">${this.description ?? "Select an item"}</div>
+      )} for="data">${this.description ?? "Select an item"}</label>
       <select
         name="data"
         id="data"
@@ -134,7 +158,8 @@ export class MultipleChoice extends Root {
             this.processor,
             this.surfaceId
           );
-          return html`<option ${option.value}>${label}</option>`;
+          const isSelected = currentSelections.includes(option.value);
+          return html`<option value=${option.value} ?selected=${isSelected}>${label}</option>`;
         })}
       </select>
     </section>`;

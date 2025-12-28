@@ -1,38 +1,56 @@
-# A2UI Generator
+# クイズジェネレーター
 
-This is a UI to generate and visualize A2UI responses.
+A2UIを使用したクイズ生成アプリケーションです。
 
-## Prerequisites
+## 前提条件
 
-1. [nodejs](https://nodejs.org/en)
+1. [Node.js](https://nodejs.org/en)
+2. [uv](https://docs.astral.sh/uv/) (Python パッケージマネージャー)
 
-## Running
+## 実行方法
 
-This sample depends on the Lit renderer. Before running this sample, you need to build the renderer.
+### 簡単な方法
 
-1. **Build the renderer:**
+親ディレクトリから以下のコマンドで全てを起動できます:
+
+```bash
+cd /Users/harano_s/Desktop/a2ui/samples/client/lit
+npm run start
+```
+
+これにより:
+- Lit レンダラーがビルドされます
+- クイズエージェントが起動します
+- 開発サーバーが起動します
+
+ブラウザで http://localhost:5173/ を開いてください。
+
+### 手動での実行
+
+1. **レンダラーをビルド:**
    ```bash
    cd ../../../renderers/lit
    npm install
    npm run build
    ```
 
-2. **Run this sample:**
+2. **このサンプルをインストール:**
    ```bash
-   cd - # back to the sample directory
+   cd - # サンプルディレクトリに戻る
    npm install
    ```
 
-3. **Run the servers:**
-   - Run the [A2A server](../../../agent/adk/restaurant_finder/)
-   - Run the dev server: `npm run dev`
+3. **サーバーを起動:**
+   - クイズエージェント: `cd ../../agent/adk/quiz_tutor && uv run .`
+   - 開発サーバー: `npm run dev`
 
-After starting the dev server, you can open http://localhost:5173/ to view the sample.
+## 使い方
 
-Important: The sample code provided is for demonstration purposes and illustrates the mechanics of A2UI and the Agent-to-Agent (A2A) protocol. When building production applications, it is critical to treat any agent operating outside of your direct control as a potentially untrusted entity.
+1. トピックを入力（例: 「日本の歴史について5問出題して」）
+2. 難易度と問題数を選択
+3. 「開始」をクリック
+4. 問題に回答してクイズを楽しもう！
 
-All operational data received from an external agent—including its AgentCard, messages, artifacts, and task statuses—should be handled as untrusted input. For example, a malicious agent could provide crafted data in its fields (e.g., name, skills.description) that, if used without sanitization to construct prompts for a Large Language Model (LLM), could expose your application to prompt injection attacks.
+## セキュリティに関する注意
 
-Similarly, any UI definition or data stream received must be treated as untrusted. Malicious agents could attempt to spoof legitimate interfaces to deceive users (phishing), inject malicious scripts via property values (XSS), or generate excessive layout complexity to degrade client performance (DoS). If your application supports optional embedded content (such as iframes or web views), additional care must be taken to prevent exposure to malicious external sites.
-
-Developer Responsibility: Failure to properly validate data and strictly sandbox rendered content can introduce severe vulnerabilities. Developers are responsible for implementing appropriate security measures—such as input sanitization, Content Security Policies (CSP), strict isolation for optional embedded content, and secure credential handling—to protect their systems and users.
+このサンプルコードはデモ用であり、A2UIとAgent-to-Agent (A2A) プロトコルの仕組みを説明しています。本番アプリケーションを構築する際は、外部エージェントからの全てのデータを信頼できない入力として扱い、適切なセキュリティ対策を実装してください。
